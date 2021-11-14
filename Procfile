@@ -1,3 +1,3 @@
-Worker: node ./src/index.js
+Worker: node index.js
 <process type>: <command>
 web: node dist/server/index.js
