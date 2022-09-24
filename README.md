@@ -1,3 +1,5 @@
+an upload of the source folder of my discord bot, bob, which is online in two servers.
+
 some command tutorials:
 
 note:
