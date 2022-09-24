@@ -1,4 +1,4 @@
-an upload of the source folder of my discord bot, bob, which is online in two servers.
+an upload of the source folder of my discord bot, bob, which is online in two servers. (config.js removed for security)
 
 some command tutorials:
 
