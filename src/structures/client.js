@@ -1,18 +1,16 @@
-const Discord = require("discord.js");
+const { Client, GatewayIntentBits } = require("discord.js");
 
-const Command = require("./command.js");
-
-const intents = new Discord.Intents(32767);
-
-class Client extends Discord.Client {
-    constructor(options) {
-        super({ intents });
-
-        /**
-         * @type {Discord.Collection<string, Command>}
-         */
-        this.commands = new Discord.Collection();
+class CustomClient extends Client {
+    constructor() {
+        super({
+            intents: [
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.MessageContent,
+            ],
+        });
+        this.commands = new Map();
     }
 }
 
-module.exports = Client;
+module.exports = CustomClient;
