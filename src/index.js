@@ -1,25 +1,32 @@
 console.clear();
 
 
-const Client = require("./structures/client.js");
-const Command = require("./structures/command.js");
+const { Client, GatewayIntentBits } = require("discord.js");
 
+// Custom client class
+const ClientClass = require("./structures/client.js");
+const Command = require("./structures/command.js");
 const config = require("./data/config.json");
 
-
-
-
-const client = new Client();
-
-client.on("ready", () => {
-    console.log("[bob has awaken]")
-
-    const theganglog = client.channels.cache.get("907822900151717900")
-    theganglog.send("I'm excited for another good time of eating Blunt Bars™!")
-    const daboislog = client.channels.cache.get("928880691058471003")
-    daboislog.send("im back, bitches")
+// Client with appropriate intents
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent, // Needed to read message content
+    ],
 });
 
+client.on("ready", () => {
+    console.log("[bob has awaken]");
+
+    const theganglog = client.channels.cache.get("907822900151717900");
+    if(theganglog) theganglog.send("I'm excited for another good time of eating Blunt Bars™!");
+    const daboislog = client.channels.cache.get("928880691058471003");
+    if(daboislog) daboislog.send("im back, bitches");
+});
+
+client.commands = new Map();
 const fs = require("fs");
 
 fs.readdirSync("./src/commands")
@@ -38,51 +45,72 @@ fs.readdirSync("./src/commands")
 
 
 client.on("messageCreate", message => {
-
+    // Log the message content
     console.log(message.content);
 
-    const generalChannel = client.channels.cache.get("907822900151717900")
-    const daboisHQ = client.channels.cache.get("928880691058471003")
+    // Example channels
+    const generalChannel = client.channels.cache.get("907822900151717900");
+    const daboisHQ = client.channels.cache.get("928880691058471003");
 
+    // Predefined responses
+    const responses = {
+        "heck": "Hello, if you decide to curse this server with that type of foul language, your home may be on my list of things to burn down. Thank you for your time.",
+        "steve": "Steve is dead and I killed him.",
+        "i'm hungry": "Hi hungry, I'm Bob.",
+        "rip steve": "Steve is not resting in peace. He never got to see the light of the gang chat because of me and he is a tortured soul in the afterlife.",
+        "what da dog doin": "ur mom",
+        "i think bob might be a wrongun": "Oh, but it is too late now. You cannot stop me.",
+        "is steve hostage": "yes",
+        "bob diff": "Does it look like I care?",
+        "this is bob's fault": "Does it look like I care?",
+    };
 
-
-
-    if (message.content == "heck") message.reply("Hello, if you decide to curse this server with that type of foul language, your home may be on my list of things to burn down. Thank you for your time.");
-
-    if (message.content == "steve") message.reply("Steve is dead and I killed him.");
-
-    if (message.content == "i'm hungry") message.reply("Hi hungry, I'm Bob.");
-
-    if (message.content == "rip steve") message.reply("Steve is not resting in peace. He never got to see the light of the gang chat because of me and he is a tortured soul in the afterlife.");
-
-    if (message.content == "what da dog doin") message.reply("ur mom");
-
-    if (message.content == "i think bob might be a wrongun") message.reply("Oh, but it is too late now. You cannot stop me.");
-
-    if (message.content == "is steve hostage") message.reply("yes");
-
-    if (message.content == "bob diff" || message.content == "this is bob's fault") message.reply("Does it look like I care?");
-
-    if (message.content == "dont care + didnt ask + ratio" || message.content == "don't care + didn't ask + ratio") message.delete();
-
-    if (message.content.toLowerCase() == "fuck you" || message.content.toLowerCase() == "fuck you bob" || message.content.toLowerCase() == "stfu" || message.content.toLowerCase == "stfu bob" || message.content.toLowerCase() == "shut the fuck up" || message.content.toLowerCase() == "shut the fuck up bob" || message.content.toLowerCase() == "shut up" || message.content.toLowerCase() == "shut up bob") message.channel.send("fuck you too");
-
-    if (message.content.toLowerCase() == "taiwan is a country" || message.content.toLowerCase() == "free tibet" || message.content.toLowerCase() == "genocide in xinjiang" || message.content.toLowerCase() == "free hong kong" || message.content.toLowerCase() == "uyghur oppression") {
-
-        message.channel.send("像这样的危险谣言不允许在此服务器上。");
+    if (responses[message.content]) {
+        message.reply(responses[message.content]);
+        return;
     }
 
+    // Specific conditions
+    if (message.content.toLowerCase() === "taiwan is a country" ||
+        message.content.toLowerCase() === "free tibet" ||
+        message.content.toLowerCase() === "genocide in xinjiang" ||
+        message.content.toLowerCase() === "free hong kong" ||
+        message.content.toLowerCase() === "uyghur oppression") {
+        message.channel.send("像这样的危险谣言不允许在此服务器上。");
+        return;
+    }
+
+    if (message.content.toLowerCase() === "dont care + didnt ask + ratio" ||
+        message.content.toLowerCase() === "don't care + didn't ask + ratio") {
+        message.delete();
+        return;
+    }
+
+    if (message.content.toLowerCase().includes("fuck you") || message.content.toLowerCase().includes("stfu") || message.content.toLowerCase().includes("shut up")) {
+        message.channel.send("fuck you too");
+        return;
+    }
+
+    // Command execution
     if (!message.content.startsWith(config.prefix)) return;
 
+    const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
 
+    const command = client.commands.get(commandName);
+    if (!command) {
+        message.reply(`${commandName} isn't a command, you idiot.`);
+        return;
+    }
 
-    const args = message.content.substring(config.prefix.length).split(/ +/);
+    try {
+        command.run(message, args, client);
+    } catch (error) {
+        console.error(error);
+        message.reply("error executing command. go pester colin.");
+    }
+});
 
-    const command = client.commands.find(cmd => cmd.name == args[0]);
-
-    if (!command) return message.reply(`${args[0]} isn't a command, you idiot.`);
-
-    command.run(message, args, client);
 });
 
 
