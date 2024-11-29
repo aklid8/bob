@@ -1,5 +1,7 @@
 console.clear();
-
+const path = require("path");
+process.chdir(path.join(__dirname));  // Change to the 'src' directory
+console.log("Changed working directory to:", process.cwd());
 
 const { Client, GatewayIntentBits } = require("discord.js");
 
@@ -29,7 +31,9 @@ client.on("ready", () => {
 client.commands = new Map();
 const fs = require("fs");
 
-fs.readdirSync("./src/commands")
+console.log("Current working directory:", process.cwd());
+
+fs.readdirSync("./commands")
     .filter(file => file.endsWith(".js"))
     .forEach(file => {
         /**
